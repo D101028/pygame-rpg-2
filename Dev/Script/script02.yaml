@@ -1,0 +1,43 @@
+message_0:
+  speakerName: "[Me]"
+  text: |-
+    Hello World!
+    Good morning sekai!
+      indent
+    haha
+message_1:
+  speakerName: null
+  text: |-
+    漂亮的人魚雕像。
+message_2:
+  speakerName: null
+  text: |-
+    雄偉的銅人。
+
+message_3:
+  speakerName: 我
+  text: |-
+    你有多快？
+message_4:
+  speakerName: 銅人
+  text: |-
+    供三小
+message_5:
+  speakerName: 
+  text: |-
+    哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈
+    哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈
+message_6:
+  speakerName: 
+  text: |-
+    
+
+choice_1:
+  text: |-
+    選項1
+choice_2:
+  text: |-
+    選項2
+choice_3:
+  text: |-
+    選項3

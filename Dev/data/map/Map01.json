@@ -1,0 +1,133 @@
+{
+    "name": "Map01", 
+    "csvMap": "../Map/map01", 
+    "ground": "../Graphics/tilemap/ground01.png", 
+    "BGM": null, 
+    "BGS": "../Audio/BGS/exterior_garden_1.ogg", 
+    "ground-SE": [
+        {
+            "id": 0, 
+            "path": "../Audio/SE/walking_on_the_gravel.ogg"
+        }, 
+        {
+            "id": 1, 
+            "path": "../Audio/SE/walking_on_hard_floor.ogg"
+        }
+    ], 
+    "script": "../Script/script01.yaml", 
+    "events": [
+        {
+            "id": 0, 
+            "name": "change map to Map02", 
+            "type": "auto", 
+            "action": "change-map", 
+            "status": "untriggered", 
+            "lock-player": true, 
+            "param": {
+                "to_map": "Map02", 
+                "inherit_events": ["play-close-door-sound"], 
+                "player_status": {
+                    "pos": [14, 28], 
+                    "status": "up_idle"
+                }, 
+                "is_open_door_sound": true
+            }
+        }, 
+        {
+            "id": 1, 
+            "name": "tree talk", 
+            "type": "event", 
+            "action": "proceed-dialog", 
+            "status": "untriggered", 
+            "lock-player": true, 
+            "param": {
+                "message_code": ["1-7"], 
+                "is_trigger_available": false
+            }, 
+            "subevents": {
+                "after": [3]
+            }, 
+            "finished-after-event": 7
+        }, 
+        {
+            "id": 2, 
+            "name": "save", 
+            "type": "event", 
+            "action": "save-data", 
+            "status": "untriggered", 
+            "lock-player": true, 
+            "param": {}
+        }, 
+        {
+            "id": 3, 
+            "name": "tree quiz", 
+            "type": "subevent", 
+            "action": "show-picture", 
+            "status": "untriggered", 
+            "lock-player": true, 
+            "param": {
+                "img_path": "../Graphics/items/math01.png", 
+                "is_alpha_animate": true
+            }, 
+            "subevents": {
+                "sync": [4]
+            }
+        }, 
+        {
+            "id": 4, 
+            "name": "choice", 
+            "type": "subevent", 
+            "action": "show-choices", 
+            "status": "untriggered", 
+            "lock-player": true, 
+            "param": {
+                "choice_code": ["1-4"], 
+                "trigger_event": {
+                    "1": 5, 
+                    "2": 5, 
+                    "3": 6, 
+                    "4": 5
+                }
+            }
+        }, 
+        {
+            "id": 5, 
+            "name": "wrong", 
+            "type": "subevent", 
+            "action": "proceed-dialog", 
+            "status": "untriggered", 
+            "lock-player": true, 
+            "param": {
+                "message_code": ["8-9"], 
+                "is_trigger_available": true
+            }, 
+            "subevents": {
+                "after": [3]
+            }
+        }, 
+        {
+            "id": 6, 
+            "name": "correct", 
+            "type": "subevent", 
+            "action": "proceed-dialog", 
+            "status": "untriggered", 
+            "lock-player": true, 
+            "param": {
+                "message_code": ["10-20"], 
+                "is_trigger_available": true
+            }
+        }, 
+        {
+            "id": 7, 
+            "name": "tree talk finished", 
+            "type": "event", 
+            "action": "proceed-dialog", 
+            "status": "untriggered", 
+            "lock-player": true, 
+            "param": {
+                "message_code": ["21-22"], 
+                "is_trigger_available": true
+            }
+        }
+    ]
+}

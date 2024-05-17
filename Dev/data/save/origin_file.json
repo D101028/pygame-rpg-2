@@ -1,0 +1,8 @@
+{
+    "proceeding-map": "Map01", 
+    "player-status": {
+        "pos": [51, 71], 
+        "status": "down_idle"
+    }, 
+    "map-details": {}
+}
