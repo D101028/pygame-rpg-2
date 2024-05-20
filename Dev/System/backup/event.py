@@ -1,10 +1,10 @@
 import pygame
 import yaml
 
+from menu import Menu
+from player import Player
 from settings import *
 from support import draw_text
-from player import Player
-from menu import Menu
 
 class ChangeMapParam:
     def __init__(self, from_map, to_map, inherit_events, player_status) -> None:
@@ -210,7 +210,6 @@ class EventCtrl:
         return False
 
     def _dialog_process(self, process_class: Process) -> bool:
-
         kwargs = process_class.kwargs
 
         self.display_surface.blit(kwargs["dialog_surf"], kwargs["dialog_topleft"])

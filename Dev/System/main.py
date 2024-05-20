@@ -1,9 +1,9 @@
 import pygame
 import sys
 
-from settings import *
 from debug import debug
 from mapctrl import MapCtrl
+from settings import *
 
 class Game:
     def __init__(self):

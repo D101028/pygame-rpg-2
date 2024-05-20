@@ -1,14 +1,20 @@
+from __future__ import annotations
+from typing import TYPE_CHECKING
+if TYPE_CHECKING:
+    from mapctrl import MapCtrl
+
 import pygame
-import json
 
 from settings import *
+from sound import choose_sound, switch_sound
 from support import draw_text
 
-class Save:
-    def __init__(self, menu, player) -> None:
-        self.menu = menu
-        self.save_data = menu.save_data
-        self.player = player
+class SavePage:
+    def __init__(self, mapctrl: MapCtrl) -> None:
+        self.mapctrl = mapctrl
+
+        self.menu = mapctrl.menu
+        self.save_data = mapctrl.save_data
 
         self.display_surface = pygame.display.get_surface()
 
@@ -20,14 +26,13 @@ class Save:
         self.is_key_listening = False
 
     def save(self, file_path):
+        player = self.mapctrl.level.player
         player_status = {
-            "pos": [round(self.player.rect.x / TILESIZE), round(self.player.rect.y / TILESIZE)], 
-            "status": self.player.status
+            "pos": [round(player.rect.x / TILESIZE), round(player.rect.y / TILESIZE)], 
+            "status": player.status, 
+            "map": self.mapctrl.proceeding_map
         }
-        self.save_data["player-status"] = player_status
-        with open(file_path, "w", encoding = "utf8") as file:
-            json.dump(self.save_data, file, indent = 4)
-        print("save data to {}".format(file_path))
+        self.save_data.save_to(file_path, player_status)
 
     def listener(self):
         keys = pygame.key.get_pressed()
@@ -35,18 +40,18 @@ class Save:
             if self.is_key_listening:
                 self.is_key_listening = False
                 if keys[pygame.K_z] or keys[pygame.K_RETURN] or keys[pygame.K_SPACE]:
-                    self.menu.choose_sound.play()
+                    choose_sound.play()
                     file_path = SAVE_FILE_PATH.format(str(self.focus + 1))
                     self.save(file_path)
                     return True
                 elif keys[pygame.K_UP]:
-                    self.menu.switch_sound.play()
+                    switch_sound.play()
                     self.focus = (self.focus - 1) % 5
                 elif keys[pygame.K_DOWN]:
-                    self.menu.switch_sound.play()
+                    switch_sound.play()
                     self.focus = (self.focus + 1) % 5
                 elif keys[pygame.K_ESCAPE]:
-                    self.menu.choose_sound.play()
+                    choose_sound.play()
                     return True
         else:
             self.is_key_listening = True
@@ -75,8 +80,8 @@ class Save:
                 self.display_surface.blit(surf, pos)
 
     def run(self) -> bool:
-        """return whether to close saving"""
         escape = self.listener()
         self.draw()
-        return escape
+        if escape:
+            self.mapctrl.level.is_saving = False
 

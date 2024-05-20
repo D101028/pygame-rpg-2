@@ -1,5 +1,4 @@
-def func():
-    print()
+a, b, c = [1,2,3]
 
 
-func()
+print(a, b, c)

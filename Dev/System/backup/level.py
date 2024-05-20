@@ -1,34 +1,20 @@
 import pygame 
 
-from data import MapData, SaveData, SettingData
-from debug import debug
-from event.eventctrl import EventCtrl
-from menu import Menu
-from player import Player
-from savepage import SavePage
 from settings import *
-from sound import BGM, BGS, SE, choose_sound
-from support import import_csv_layout, import_folder
 from tile import Tile
+from player import Player
+from backup.event import EventCtrl, ChangeMapParam
+from menu import Menu
+from savepage import SavePage
+from debug import debug
+from support import *
 
 class Level:
-    def __init__(self, eventctrl: EventCtrl, 
-                 map_data: MapData, save_data: SaveData, setting_data: SettingData, 
-                 menu: Menu, savepage: SavePage) -> None:
-        self.eventctrl = eventctrl
-
-        # map data
-        self.map_data = map_data
-        self.csv_map_path = self.map_data["csvMap"]
-        self.ground_filename = self.map_data["ground"]
-
-        self.save_data = save_data
-        self.setting_data = setting_data
-
-        # init sound volume
-        BGM.set_global_volume(self.setting_data["volume"]["BGM"])
-        BGS.set_global_volume(self.setting_data["volume"]["BGS"])
-        SE.set_global_volume(self.setting_data["volume"]["SE"])
+    def __init__(self, save_data, map_name, change_map_param = None):
+        # load data
+        self.data = save_data["map-details"][map_name]
+        self.csv_map_path = self.data["csvMap"]
+        self.ground_filename = self.data["ground"]
 
         # get the display surface 
         self.display_surface = pygame.display.get_surface()
@@ -40,17 +26,19 @@ class Level:
         self.groundtype_sprites = pygame.sprite.Group()
 
         # menu
-        self.menu = menu
+        self.menu = Menu(save_data)
         self.is_menu_listening = False
         self.is_menu_open = False
-        self.forced_menu_listening = False
 
         # sprite setup (including player)
         self.create_map()
 
         # save
-        self.savepage = savepage
+        self.savepage = SavePage(self.menu, self.player)
         self.is_saving = False
+
+        # event class
+        self.eventctrl = EventCtrl(self.player, self.event_sprites, map_name, change_map_param, self.menu)
 
         # sound settings
         # background music/sound
@@ -62,12 +50,6 @@ class Level:
         self.ground_SE_dict = {}
         self.walking_sound_id = None
         self.load_walking_sound()
-
-        # start map
-        self.is_start_map_animate = True
-        self.start_map_surf = pygame.surface.Surface((WIDTH, HEIGTH)).convert_alpha()
-        self.start_map_surf_alpha = 255
-        self.start_map_surf.set_alpha(255)
 
     def create_map(self):
         layouts = {
@@ -84,15 +66,15 @@ class Level:
         }
 
         # create player
-        player_status = self.save_data["player-status"]
+        player_status = self.menu.save_data["player-status"]
         x = player_status["pos"][0] * TILESIZE
         y = player_status["pos"][1] * TILESIZE
         self.player = Player(
             (x,y),
             [self.visible_sprites],
             self.obstacle_sprites, 
-            player_status["status"]
         )
+        self.player.status = player_status["status"]
 
         for style,layout in layouts.items():
             for row_index,row in enumerate(layout):
@@ -121,26 +103,28 @@ class Level:
                             pass 
 
     def load_walking_sound(self):
-        for item in self.map_data["ground-SE"]:
-            sound = SE(item["path"])
-            sound.set_global_volume(self.setting_data["volume"]["SE"])
+        for item in self.data["ground-SE"]:
+            sound = pygame.mixer.Sound(item["path"])
+            sound.set_volume(self.menu.settings["volume"]["SE"])
             self.ground_SE_dict.update({item["id"]: sound})
 
     def play_bgm_and_bgs(self):
-        path = self.map_data["BGM"]
+        path = self.data["BGM"]
         if path is not None:
-            self.bgm = BGM(path)
-            self.bgm.set_global_volume(self.setting_data["volume"]["BGM"])
+            self.bgm = pygame.mixer.Sound(path)
+            self.bgm.set_volume(self.menu.settings["volume"]["BGM"])
             self.bgm.play(-1)
-        path = self.map_data["BGS"]
+        path = self.data["BGS"]
         if path is not None:
-            self.bgs = BGS(path)
-            self.bgs.set_global_volume(self.setting_data["volume"]["BGS"])
+            self.bgs = pygame.mixer.Sound(path)
+            self.bgs.set_volume(self.menu.settings["volume"]["BGS"])
             self.bgs.play(-1)
 
     def stop_bgm_and_bgs(self):
-        BGM.stop_all()
-        BGS.stop_all()
+        if self.bgm is not None:
+            self.bgm.stop()
+        if self.bgs is not None:
+            self.bgs.stop()
 
     def play_walking_sound(self):
         if self.player.direction.x == 0 and self.player.direction.y == 0:
@@ -164,40 +148,33 @@ class Level:
                 sound.stop()
             self.walking_sound_id = None
 
-    def lock_player(self):
-        self.player.is_keyboard_forbidden = True
-        self.player.direction.x, self.player.direction.y = 0, 0
-    
-    def unlock_player(self):
-        self.player.is_keyboard_forbidden = False
+    def set_sound_value(self):
+        for sound in self.ground_SE_dict.values():
+            sound.set_volume(self.menu.settings["volume"]["SE"])
+        if self.bgm is not None:
+            self.bgm.set_volume(self.menu.settings["volume"]["BGM"])
+        if self.bgs is not None:
+            self.bgs.set_volume(self.menu.settings["volume"]["BGS"])
 
     def menu_listener(self):
-        if self.player.is_keyboard_forbidden and not self.forced_menu_listening:
+        if len(self.eventctrl.processes) != 0:
             return 
         keys = pygame.key.get_pressed()
         if keys[pygame.K_ESCAPE]:
             if self.is_menu_listening:
                 self.is_menu_listening = False
-                choose_sound.play()
+                self.menu.choose_sound.play()
                 self.is_menu_open = True
         else:
             self.is_menu_listening = True
 
     def run(self):
+        """return ChangeMapParam or MenuReturnParam"""
+        self.is_saving = self.eventctrl.is_open_saving
         self.visible_sprites.custom_draw(self.player)
 
-        # start map animate
-        if self.is_start_map_animate:
-            self.lock_player()
-            self.display_surface.blit(self.start_map_surf, (0,0))
-            speed = 4
-            self.start_map_surf_alpha -= speed
-            if self.start_map_surf_alpha < 0:
-                self.is_start_map_animate = False
-                self.unlock_player()
-            else:
-                self.start_map_surf.set_alpha(self.start_map_surf_alpha)
-            return
+        # set sound volume
+        self.set_sound_value()
 
         # play walk sound
         self.play_walking_sound()
@@ -206,17 +183,25 @@ class Level:
             self.eventctrl.is_event_listening = False # avoid z/return/space problem
 
             # run menu
-            self.menu.run()
+            param = self.menu.run()
+
+            self.is_menu_open = not param.close_menu
+
+            if param.save_load_path is not None:
+                self.stop_bgm_and_bgs()
+                return param
 
         elif self.is_saving:
             self.is_menu_listening = False # avoid esc problem
 
             # run save
-            self.savepage.run()
+            param = self.savepage.run()
+
+            self.eventctrl.is_open_saving = not param
 
         else:
             # run events
-            self.eventctrl.run()
+            param = self.eventctrl.run()
 
             # update sprites (including player)
             self.visible_sprites.update()
@@ -224,6 +209,13 @@ class Level:
             # listen to menu
             self.menu_listener()
 
+            # change map
+            if isinstance(param, ChangeMapParam):
+                self.stop_bgm_and_bgs()
+
+            return param
+
+        return None
 
 class YSortCameraGroup(pygame.sprite.Group):
     def __init__(self, ground_filename):
@@ -239,7 +231,7 @@ class YSortCameraGroup(pygame.sprite.Group):
         self.floor_surf = pygame.image.load(ground_filename).convert()
         self.floor_rect = self.floor_surf.get_rect(topleft = (0,0))
 
-    def custom_draw(self, player):
+    def custom_draw(self,player):
 
         # getting the offset 
         self.offset.x = player.rect.centerx - self.half_width
@@ -253,3 +245,4 @@ class YSortCameraGroup(pygame.sprite.Group):
         for sprite in sorted(self.sprites(), key = lambda sprite: sprite.rect.centery):
             offset_pos = sprite.rect.topleft - self.offset
             self.display_surface.blit(sprite.image, offset_pos)
+

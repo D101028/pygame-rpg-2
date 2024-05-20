@@ -1,8 +1,17 @@
 {
-    "proceeding-map": "Map01", 
     "player-status": {
         "pos": [51, 71], 
-        "status": "down_idle"
+        "status": "down_idle", 
+        "map": "Map01"
     }, 
-    "map-details": {}
+    "switches": {
+        "math-picture-switch": false, 
+        "map-2-switch-1": false, 
+        "map-2-switch-2": false, 
+        "map-2-switch-3": false, 
+        "map-2-fish-help-over": false
+    }, 
+    "variables": {
+        "map-2-fish-help": 0
+    }
 }
