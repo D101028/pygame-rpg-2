@@ -4,7 +4,8 @@ from settings import *
 from support import crop_img, fill_chr
 
 class AnimationBlock(pygame.sprite.Sprite):
-    def __init__(self, pos, groups, animation_id: int, 
+    def __init__(self, pos, groups, 
+                 animation_id: int = None, file_path: str = None, 
                  animation_speed: float = 0.15, 
                  unit_move_route: list[tuple[float, float]] | None = None, interval: int = 60, loop: int = -1):
         """interval: frames of moving between two points"""
@@ -14,11 +15,11 @@ class AnimationBlock(pygame.sprite.Sprite):
         super().__init__(groups)
         self.frame_index = 0
         self.animation_speed = animation_speed
-        self.name = fill_chr(str(animation_id))
+        self.name = fill_chr(str(animation_id)) if animation_id is not None else None
         self.size = ANIMATION_BLOCK_SIZE_LIST[animation_id]
 
         # graphics setup
-        self.import_graphics()
+        self.import_graphics(file_path)
         self.image = self.animations[self.frame_index]
     
         # movement
@@ -41,8 +42,9 @@ class AnimationBlock(pygame.sprite.Sprite):
         self.percentage = 0
         
 
-    def import_graphics(self):
-        filepath = "../Graphics/animations/" + self.name + ".png"
+    def import_graphics(self, filepath: str = None):
+        if filepath is None:
+            filepath = f"../Graphics/animations/{self.name}.png"
         self.animations = crop_img(filepath, self.size[0], self.size[1])
 
     def set_pos(self, pos):
