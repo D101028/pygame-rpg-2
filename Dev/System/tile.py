@@ -12,7 +12,7 @@ class Tile(pygame.sprite.Sprite):
             y_offset = -int(height * 0.3125) if height <= 128 else -int(height * 0.5)
             x_offset = 0 if width <= 128 else -int(width * 0.3)
             self.image = surface
-            self.rect = self.image.get_rect(topleft = (pos[0], pos[1] - (height - TILESIZE)))
+            self.rect = self.image.get_rect(bottomleft = (pos[0], pos[1] + TILESIZE))
             self.hitbox = self.rect.inflate(x_offset, y_offset)
             if height > 128:
                 self.hitbox.y += height * 0.1
@@ -32,3 +32,4 @@ class Tile(pygame.sprite.Sprite):
             self.image = surface
             self.rect = self.image.get_rect(topleft = pos)
             self.hitbox = self.rect.inflate(0, y_offset)
+

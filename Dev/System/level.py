@@ -1,8 +1,10 @@
 import pygame 
 
+from aniblock import AnimationBlock
 from data import MapData, SaveData, SettingData
 from debug import debug
 from event.eventctrl import EventCtrl
+from key import KeyPress, KeySettings
 from menu import Menu
 from player import Player
 from savepage import SavePage
@@ -69,6 +71,9 @@ class Level:
         self.start_map_surf_alpha = 255
         self.start_map_surf.set_alpha(255)
 
+        # dark cover
+        self.dark_cover_surf: pygame.Surface | None = None
+
     def create_map(self):
         layouts = {
             'boundary': import_csv_layout(self.csv_map_path + '/map_FloorBlocks.csv'),
@@ -76,7 +81,9 @@ class Level:
             'entities': import_csv_layout(self.csv_map_path + '/map_Entities.csv'), 
             'event': import_csv_layout(self.csv_map_path + '/map_Events.csv'), 
             'detail': import_csv_layout(self.csv_map_path + '/map_Details.csv'), 
-            'groundtype': import_csv_layout(self.csv_map_path + '/map_Groundtype.csv')
+            'groundtype': import_csv_layout(self.csv_map_path + '/map_Groundtype.csv'), 
+            'animationblockobject': import_csv_layout(self.csv_map_path + '/map_AnimationBlockObjects.csv'), 
+            'animationblockdetail': import_csv_layout(self.csv_map_path + '/map_AnimationBlockDetails.csv')
         }
         graphics = {
             'objects': import_folder('../Graphics/objects'), 
@@ -117,7 +124,17 @@ class Level:
                         if style == 'groundtype':
                             Tile((x,y), [self.groundtype_sprites], 'groundtype', ground_id = int(col))
 
-                        if style == 'entities':
+                        if style == 'animationblockobject':
+                            AnimationBlock((x,y), 
+                                           [self.visible_sprites, self.obstacle_sprites], 
+                                           int(col))
+
+                        if style == 'animationblockdetail':
+                            AnimationBlock((x,y), 
+                                           [self.visible_sprites], 
+                                           int(col))
+
+                        if style == 'entities': # except player
                             pass 
 
     def load_walking_sound(self):
@@ -174,8 +191,8 @@ class Level:
     def menu_listener(self):
         if self.player.is_keyboard_forbidden and not self.forced_menu_listening:
             return 
-        keys = pygame.key.get_pressed()
-        if keys[pygame.K_ESCAPE]:
+        keys = KeyPress.keys
+        if keys[KeySettings.menu_1] or keys[KeySettings.menu_2]:
             if self.is_menu_listening:
                 self.is_menu_listening = False
                 choose_sound.play()
@@ -185,6 +202,8 @@ class Level:
 
     def run(self):
         self.visible_sprites.custom_draw(self.player)
+        if self.dark_cover_surf is not None:
+            self.display_surface.blit(self.dark_cover_surf, (0,0))
 
         # start map animate
         if self.is_start_map_animate:
@@ -250,6 +269,6 @@ class YSortCameraGroup(pygame.sprite.Group):
         self.display_surface.blit(self.floor_surf,floor_offset_pos)
 
         # for sprite in self.sprites():
-        for sprite in sorted(self.sprites(), key = lambda sprite: sprite.rect.centery):
+        for sprite in sorted(self.sprites(), key = lambda sprite: sprite.rect.bottom):
             offset_pos = sprite.rect.topleft - self.offset
             self.display_surface.blit(sprite.image, offset_pos)

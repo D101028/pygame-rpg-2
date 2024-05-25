@@ -1,6 +1,7 @@
 
 from data import SaveData, MapData, SettingData, ScriptData
 from event.eventctrl import EventCtrl
+from key import KeyPress
 from level import Level
 from menu import Menu
 from savepage import SavePage
@@ -46,5 +47,6 @@ class MapCtrl:
                            self.menu, self.savepage)
 
     def run(self):
+        KeyPress.update()
         self.level.run()
 

@@ -1,6 +1,7 @@
 import pygame 
 
 from entity import Entity
+from key import KeyPress, KeySettings
 from settings import *
 from support import import_folder
 
@@ -10,7 +11,6 @@ class Player(Entity):
                 ):
         super().__init__(groups)
         status = status.replace("_idle", "")
-        self.image = pygame.image.load('../Graphics/test/player.png').convert_alpha()
         self.image = pygame.image.load(f'../Graphics/player/{status}/{status}_0.png').convert_alpha()
         self.rect = self.image.get_rect(topleft = pos)
         self.hitbox = self.rect.inflate(-6, HITBOX_OFFSET['player'])
@@ -39,28 +39,28 @@ class Player(Entity):
     def input(self):
         # if not self.attacking:
         if not self.is_keyboard_forbidden:
-            keys = pygame.key.get_pressed()
+            keys = KeyPress.keys
 
             # run
-            if keys[pygame.K_LSHIFT]:
+            if keys[KeySettings.run]:
                 self.stats['speed'] = 8
             else:
                 self.stats['speed'] = 5
 
             # movement input
-            if keys[pygame.K_UP]:
+            if keys[KeySettings.up]:
                 self.direction.y = -1
                 self.status = 'up'
-            elif keys[pygame.K_DOWN]:
+            elif keys[KeySettings.down]:
                 self.direction.y = 1
                 self.status = 'down'
             else:
                 self.direction.y = 0
 
-            if keys[pygame.K_RIGHT]:
+            if keys[KeySettings.right]:
                 self.direction.x = 1
                 self.status = 'right'
-            elif keys[pygame.K_LEFT]:
+            elif keys[KeySettings.left]:
                 self.direction.x = -1
                 self.status = 'left'
             else:

@@ -1,4 +1,3 @@
-a, b, c = [1,2,3]
+import random
 
-
-print(a, b, c)
+random.randint

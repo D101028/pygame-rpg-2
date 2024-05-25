@@ -3,7 +3,7 @@ from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from mapctrl import MapCtrl
 
-from event.process import ChangeMap, ShowText, ShowChoices, ShowPicture, GameOver
+from event.process import ChangeMap, ShowText, ShowChoices, ShowPicture, GameOver, OpenDarkCover, CloseDarkCover
 
 class CommonEvent:
     def __init__(self, mapctrl: MapCtrl, event_data: list, index: int | None) -> None:
@@ -253,6 +253,15 @@ class Command:
         elif self.action == "Game Over":
             self.process = GameOver(self.mapctrl, self.commonevent, True, 
                                     self.param.get("script_ranges"), self.param.get("play_sound"))
+            self.run_process()
+    
+        elif self.action == "Open Dark Cover":
+            self.process = OpenDarkCover(self.mapctrl, self.commonevent, False, 
+                                         self.param["size"], self.param.get("is_animate"))
+            self.run_process()
+        elif self.action == "Close Dark Cover":
+            self.process = CloseDarkCover(self.mapctrl, self.commonevent, False, 
+                                         self.param.get("is_animate"))
             self.run_process()
 
         else:

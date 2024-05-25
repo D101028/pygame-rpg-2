@@ -5,6 +5,7 @@ if TYPE_CHECKING:
 
 import pygame
 
+from key import KeyPress, KeySettings
 from settings import *
 from sound import choose_sound, switch_sound
 from support import draw_text
@@ -35,22 +36,24 @@ class SavePage:
         self.save_data.save_to(file_path, player_status)
 
     def listener(self):
-        keys = pygame.key.get_pressed()
-        if keys[pygame.K_z] or keys[pygame.K_RETURN] or keys[pygame.K_SPACE] or keys[pygame.K_UP] or keys[pygame.K_DOWN] or keys[pygame.K_ESCAPE]:
+        keys = KeyPress.keys
+        if keys[KeySettings.confirm_1] or keys[KeySettings.confirm_2] \
+            or keys[KeySettings.cancel_1] or keys[KeySettings.cancel_2] \
+            or keys[KeySettings.up] or keys[KeySettings.down]:
             if self.is_key_listening:
                 self.is_key_listening = False
-                if keys[pygame.K_z] or keys[pygame.K_RETURN] or keys[pygame.K_SPACE]:
+                if keys[KeySettings.confirm_1] or keys[KeySettings.confirm_2]:
                     choose_sound.play()
                     file_path = SAVE_FILE_PATH.format(str(self.focus + 1))
                     self.save(file_path)
                     return True
-                elif keys[pygame.K_UP]:
+                elif keys[KeySettings.up]:
                     switch_sound.play()
                     self.focus = (self.focus - 1) % 5
-                elif keys[pygame.K_DOWN]:
+                elif keys[KeySettings.down]:
                     switch_sound.play()
                     self.focus = (self.focus + 1) % 5
-                elif keys[pygame.K_ESCAPE]:
+                elif keys[KeySettings.cancel_1] or keys[KeySettings.cancel_2]:
                     choose_sound.play()
                     return True
         else:

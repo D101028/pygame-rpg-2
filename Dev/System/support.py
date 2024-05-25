@@ -1,17 +1,21 @@
 from csv import reader
-from os import walk
+from os import walk, path
 
 import pygame
 
-def import_csv_layout(path):
+from settings import *
+
+def import_csv_layout(filepath) -> list[list[str]]:
+    if not path.isfile(filepath):
+        return []
     terrain_map = []
-    with open(path) as level_map:
+    with open(filepath) as level_map:
         layout = reader(level_map, delimiter = ',')
         for row in layout:
             terrain_map.append(list(row))
         return terrain_map
 
-def import_folder(path):
+def import_folder(path) -> list[pygame.surface.Surface]:
     surface_list = []
 
     for _, __, img_files in walk(path):
@@ -33,3 +37,20 @@ def draw_text(surf: pygame.Surface, text: str, size: int, x: int | None, y: int 
         text_rect.left = x
         text_rect.top = y
         surf.blit(text_surface, text_rect) # draw
+
+def crop_img(filepath, width = TILESIZE, height = TILESIZE) -> list[pygame.surface.Surface]:
+    surf_list = []
+    image = pygame.image.load(filepath).convert_alpha()
+    image_height = image.get_height()
+    image_width = image.get_width()
+    for y in range(image_height // height):
+        for x in range(image_width // width):
+            surf = image.subsurface((width * x, height * y, width, height))
+            surf_list.append(surf)
+    return surf_list
+
+def fill_chr(text: str, chr: str = "0", length: int = 2) -> str:
+    ori_length = len(text)
+    if ori_length >= length:
+        return text
+    return chr*(length - ori_length) + text

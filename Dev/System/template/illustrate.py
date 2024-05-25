@@ -205,6 +205,11 @@ Show Picture(
     filepath: str, 
     *is_alpha_animate: bool
 ) (l)
+Conditional Branch(
+    "if": str, 
+    "then": [], 
+    *"else": []
+)
 Loop(
     "condition": str, # condition format str
     "do": [] # some contents
@@ -212,6 +217,13 @@ Loop(
 Game Over (
     *script_ranges: list[str], 
     *play_sound: str
+)
+Open Dark Cover (
+    size: 64, 
+    *is_animate: false
+)
+Close Dark Cover (
+    *is_animate: false
 )
 """
 

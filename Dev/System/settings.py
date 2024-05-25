@@ -20,3 +20,9 @@ SAVE_FILE_PATH          = "../data/save/file{}.json"
 ORIGIN_SAVE_FILE_PATH   = "../data/save/origin_file.json"
 SETTING_FILE_PATH       = "../data/settings/settings.json"
 
+# animation blocks
+ANIMATION_BLOCK_SIZE_LIST = [
+    (384, 384), 
+    (384, 384), 
+    (471, 498)
+]

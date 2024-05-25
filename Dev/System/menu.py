@@ -8,6 +8,7 @@ import os
 
 import pygame
 
+from key import KeyPress, KeySettings, code_key_dict
 from settings import *
 from sound import choose_sound, switch_sound, BGM, BGS, SE
 from support import draw_text
@@ -62,22 +63,25 @@ class Menu:
             json.dump(file, indent = 4)
 
     def section_listener(self):
-        keys = pygame.key.get_pressed()
-        keys_int = (pygame.K_RETURN, pygame.K_z, pygame.K_SPACE, pygame.K_UP, pygame.K_DOWN, pygame.K_RIGHT, pygame.K_ESCAPE)
+        keys = KeyPress.keys
+        keys_int = (KeySettings.confirm_1, KeySettings.confirm_2, 
+                    KeySettings.menu_1, KeySettings.menu_2, 
+                    KeySettings.cancel_1, KeySettings.cancel_2, 
+                    KeySettings.up, KeySettings.down)
         if any(keys[i] for i in keys_int):
             if self.is_key_listening:
                 self.is_key_listening = False
-                if keys[pygame.K_RETURN] or keys[pygame.K_z] or keys[pygame.K_SPACE] or keys[pygame.K_RIGHT]:
+                if keys[KeySettings.confirm_1] or keys[KeySettings.confirm_2] or keys[KeySettings.right]:
                     self.select_section = self.focus_section
                     choose_sound.play()
                     self.lf.load_file_list()
-                elif keys[pygame.K_UP]:
+                elif keys[KeySettings.up]:
                     self.focus_section = (self.focus_section - 1) % 3
                     switch_sound.play()
-                elif keys[pygame.K_DOWN]:
+                elif keys[KeySettings.down]:
                     self.focus_section = (self.focus_section + 1) % 3
                     switch_sound.play()
-                elif keys[pygame.K_ESCAPE]:
+                elif keys[KeySettings.menu_1] or keys[KeySettings.menu_2] or keys[KeySettings.cancel_1] or keys[KeySettings.cancel_2]:
                     self.mapctrl.level.is_menu_open = False
                     choose_sound.play()
         else:
@@ -110,7 +114,6 @@ class Menu:
             self.st.run()
         
         if not self.mapctrl.level.is_menu_open:
-        # if param.close_menu:
             self.reset_param()
 
 
@@ -169,25 +172,34 @@ class LoadFileSect:
 class SettingSect:
     def __init__(self, menu: Menu) -> None:
         self.menu = menu
-        self.pos = (214, 24)
+        self.ori_pos = [214, 24]
+        self.pos = [214, 24]
         self.focus = 0
         self.is_key_listening = False
+
+        self.subsect = 0
+
+        self.keys_sect_select = None
     
-    def listener(self):
-        keys = pygame.key.get_pressed()
-        if keys[pygame.K_UP] or keys[pygame.K_DOWN] or keys[pygame.K_LEFT] or keys[pygame.K_RIGHT] or keys[pygame.K_ESCAPE]:
+    def volume_subsect_listener(self):
+        keys = KeyPress.keys
+        if keys[KeySettings.up] or keys[KeySettings.down] or keys[KeySettings.left] or keys[KeySettings.right] \
+            or keys[KeySettings.cancel_1] or keys[KeySettings.cancel_2] or keys[KeySettings.menu_1] or keys[KeySettings.menu_2]:
             if self.is_key_listening:
                 self.is_key_listening = False
-                if keys[pygame.K_UP]:
-                    self.focus = (self.focus - 1) % 3
+                if keys[KeySettings.up]:
+                    self.focus = max(self.focus - 1, 0)
                     switch_sound.play()
-                elif keys[pygame.K_DOWN]:
-                    self.focus = (self.focus + 1) % 3
+                elif keys[KeySettings.down]:
+                    self.focus += 1
+                    if self.focus == 3:
+                        self.focus = 0
+                        self.subsect = 1
                     switch_sound.play()
-                elif keys[pygame.K_ESCAPE]:
+                elif keys[KeySettings.cancel_1] or keys[KeySettings.cancel_2] or keys[KeySettings.menu_1] or keys[KeySettings.menu_2]:
                     self.menu.select_section = None
                     choose_sound.play()
-                elif keys[pygame.K_LEFT]:
+                elif keys[KeySettings.left]:
                     if self.focus == 0:
                         self.menu.setting_data["volume"]["BGM"] = max(self.menu.setting_data["volume"]["BGM"] - 0.05, 0)
                     elif self.focus == 1:
@@ -197,37 +209,95 @@ class SettingSect:
                     self.menu.setting_data.save_to()
                     self.menu.set_sound_volume()
                     choose_sound.play()
-                elif keys[pygame.K_RIGHT]:
+                elif keys[KeySettings.right]:
                     if self.focus == 0:
-                        self.menu.setting_data["volume"]["BGM"] = max(self.menu.setting_data["volume"]["BGM"] + 0.05, 0)
+                        self.menu.setting_data["volume"]["BGM"] = min(self.menu.setting_data["volume"]["BGM"] + 0.05, 1)
                     elif self.focus == 1:
-                        self.menu.setting_data["volume"]["BGS"] = max(self.menu.setting_data["volume"]["BGS"] + 0.05, 0)
+                        self.menu.setting_data["volume"]["BGS"] = min(self.menu.setting_data["volume"]["BGS"] + 0.05, 1)
                     elif self.focus == 2:
-                        self.menu.setting_data["volume"]["SE"] = max(self.menu.setting_data["volume"]["SE"] + 0.05, 0)
+                        self.menu.setting_data["volume"]["SE"] = min(self.menu.setting_data["volume"]["SE"] + 0.05, 1)
                     self.menu.setting_data.save_to()
                     self.menu.set_sound_volume()
                     choose_sound.play()
         else:
             self.is_key_listening = True
 
+    def keys_subsect_listener(self):
+        keys = KeyPress.keys
+        if keys[KeySettings.up] or keys[KeySettings.down] or keys[KeySettings.left] or keys[KeySettings.right] \
+            or keys[KeySettings.confirm_1] or keys[KeySettings.confirm_2] \
+            or keys[KeySettings.cancel_1] or keys[KeySettings.cancel_2] or keys[KeySettings.menu_1] or keys[KeySettings.menu_2]:
+            if self.is_key_listening:
+                self.is_key_listening = False
+                if keys[KeySettings.up]:
+                    self.focus -= 1
+                    if self.focus == -1:
+                        self.focus = 2
+                        self.subsect = 0
+                    switch_sound.play()
+                elif keys[KeySettings.down]:
+                    self.focus = min(self.focus + 1, 13)
+                    switch_sound.play()
+                elif keys[KeySettings.cancel_1] or keys[KeySettings.cancel_2] or keys[KeySettings.menu_1] or keys[KeySettings.menu_2]:
+                    self.menu.select_section = None
+                    choose_sound.play()
+                elif keys[KeySettings.confirm_1] or keys[KeySettings.confirm_2]:
+                    self.keys_sect_select = self.focus
+                    choose_sound.play()
+        else:
+            self.is_key_listening = True
+
+    def setting_key_listener(self):
+        for event in pygame.event.get():
+            if event.type == pygame.KEYDOWN:
+                self.is_key_listening = False
+                key_value = event.key
+                KeySettings.set_key_by_idx(self.focus, key_value)
+                self.menu.setting_data.save_to()
+                self.keys_sect_select = None
+                choose_sound.play()
+
+    def listener(self):
+        if self.keys_sect_select is None:
+            if self.subsect == 0:
+                self.volume_subsect_listener()
+            elif self.subsect == 1:
+                self.keys_subsect_listener()
+        else:
+            self.setting_key_listener()
+
     def draw(self):
         count = 0
-        surf = pygame.surface.Surface((740, HEIGTH - 48))
+        surf = pygame.surface.Surface((740, 2048))
 
         y_pos_list = []
 
         # volume
         draw_text(surf, "Volume", 30, 10, 10 + 70 * count)
         count += 1
-        for key in ("BGM", "BGS", "SE"):
+        for idx, key in enumerate(("BGM", "BGS", "SE")):
             value = self.menu.setting_data["volume"][key]
-            draw_text(surf, key, 22, 30, 10 + 70 * count)
+            color = (255, 255, 255) if self.subsect != 0 or self.focus != idx else (255, 255, 0)
+            draw_text(surf, key, 22, 30, 10 + 70 * count, color)
             surf.blit(BarSurf(value).surf, (90, 15 + 70 * count))
             y_pos_list.append(10 + 70 * count)
             count += 1
         
-        # draw focus
-        draw_text(surf, "**", 22, 10, y_pos_list[self.focus])
+        # keys settings
+        draw_text(surf, "Keys", 30, 10, 10 + 70 * count)
+        count += 1
+        for i in range(14):
+            color1 = (255, 255, 255) if self.subsect != 1 or self.focus != i else (255, 255, 0)
+            draw_text(surf, KeySettings.keys_list[i], 22, 30, 15 + 70 * count, color1)
+            color2 = (255, 255, 255) if self.keys_sect_select != self.focus or self.focus != i else (255, 255, 0)
+            draw_text(surf, pygame.key.name(KeySettings.get_key_by_idx(i)), 22, 200, 15 + 70 * count, color2)
+            y_pos_list.append(10 + 70 * count)
+            count += 1
+
+        if self.subsect >= 1:
+            self.pos[1] = self.ori_pos[1] - self.focus * 70
+        else:
+            self.pos = self.ori_pos.copy()
 
         self.menu.display_surface.blit(surf, self.pos)
 

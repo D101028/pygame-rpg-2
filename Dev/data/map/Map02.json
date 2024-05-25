@@ -211,6 +211,16 @@
                     "condition": "v[map-2-fish-help] == 2", 
                     "trigger": "Action Button", 
                     "contents": [
+                        ["Change Map", {
+                            "to_map": "Map03", 
+                            "exit_sound": "../Audio/SE/door_open.ogg", 
+                            "enter_sound": "../Audio/Se/door_close.ogg", 
+                            "player_status": {
+                                "pos": [58,32], 
+                                "status": "left", 
+                                "map": "Map03"
+                            }
+                        }]
                     ]
                 }
             ]

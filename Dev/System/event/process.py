@@ -7,8 +7,9 @@ if TYPE_CHECKING:
 
 import pygame
 
+from key import KeyPress, KeySettings
 from settings import *
-from sound import SE, choose_sound, switch_sound, BGM, BGS
+from sound import SE, choose_sound, switch_sound
 from support import draw_text
 
 class Process:
@@ -126,8 +127,8 @@ class ShowText(Process):
             self.display_surface.blit(self.triangle_surf, self.triangle_topleft)
 
         # next text
-        keys = pygame.key.get_pressed()
-        if (keys[pygame.K_z] or keys[pygame.K_SPACE] or keys[pygame.K_RETURN]):
+        keys = KeyPress.keys
+        if keys[KeySettings.confirm_1] or keys[KeySettings.confirm_2] or keys[KeySettings.cancel_1] or keys[KeySettings.cancel_2]:
             if self.is_key_listening:
                 self.is_key_listening = False
                 if self.script_chr_count < len(content) + 1:
@@ -176,17 +177,17 @@ class ShowChoices(Process):
     def run(self):
         self.default_run()
 
-        keys = pygame.key.get_pressed()
-        if keys[pygame.K_UP] or keys[pygame.K_DOWN] or keys[pygame.K_z] or keys[pygame.K_SPACE] or keys[pygame.K_RETURN]:
+        keys = KeyPress.keys
+        if keys[KeySettings.up] or keys[KeySettings.down] or keys[KeySettings.confirm_1] or keys[KeySettings.confirm_2]:
             if self.is_key_listening:
                 self.is_key_listening = False
-                if keys[pygame.K_UP]:
+                if keys[KeySettings.up]:
                     self.focused_choice = (self.focused_choice - 1) % len(self.choice_msg_list)
                     switch_sound.play()
-                if keys[pygame.K_DOWN]:
+                if keys[KeySettings.down]:
                     self.focused_choice = (self.focused_choice + 1) % len(self.choice_msg_list)
                     switch_sound.play()
-                if keys[pygame.K_z] or keys[pygame.K_SPACE] or keys[pygame.K_RETURN]:
+                if keys[KeySettings.confirm_1] or keys[KeySettings.confirm_2]:
                     choose_sound.play()
                     choice = self.choice_msg_list[self.focused_choice]
                     contents = self.after[choice]
@@ -240,8 +241,8 @@ class ShowPicture(Process):
         self.img.set_alpha(self.alpha)
 
         # get key pressed
-        keys = pygame.key.get_pressed()
-        if (keys[pygame.K_z] or keys[pygame.K_SPACE] or keys[pygame.K_RETURN]):
+        keys = KeyPress.keys
+        if keys[KeySettings.confirm_1] or keys[KeySettings.confirm_2]:
             if self.is_key_listening:
                 self.is_key_listening = False
                 if self.alpha < 255:
@@ -313,8 +314,8 @@ class GameOver(Process):
         #     self.display_surface.blit(self.triangle_surf, self.triangle_topleft)
 
         # next text
-        keys = pygame.key.get_pressed()
-        if (keys[pygame.K_z] or keys[pygame.K_SPACE] or keys[pygame.K_RETURN]):
+        keys = KeyPress.keys
+        if keys[KeySettings.confirm_1] or keys[KeySettings.confirm_2]:
             if self.is_key_listening:
                 self.is_key_listening = False
                 if self.script_chr_count < len(content) + 1:
@@ -339,4 +340,48 @@ class GameOver(Process):
             self.run_script()
         else:
             self.mapctrl.level.forced_menu_listening = True
+
+class OpenDarkCover(Process):
+    def __init__(self, mapctrl: MapCtrl, commonevent: CommonEvent, lock_player: bool, 
+                 size: int, is_animate: bool | None) -> None:
+        super().__init__(mapctrl, commonevent, lock_player)
+        self.is_animate = False if is_animate is None else is_animate
+        self.surf = pygame.image.load(f"../Graphics/layer/dark_cover_{size}.png").convert_alpha()
+        self.alpha = 0 if self.is_animate else 255
+
+    def run(self):
+        self.default_run()
+
+        speed = 4
+        self.alpha += speed
+        
+        if self.alpha >= 255:
+            self.alpha = 255
+            self.is_finished = True
+        
+        self.surf.set_alpha(self.alpha)
+        self.mapctrl.level.dark_cover_surf = self.surf
+
+class CloseDarkCover(Process):
+    def __init__(self, mapctrl: MapCtrl, commonevent: CommonEvent, lock_player: bool, 
+                 is_animate: bool | None) -> None:
+        super().__init__(mapctrl, commonevent, lock_player)
+        self.is_animate = False if is_animate is None else is_animate
+        self.surf = self.mapctrl.level.dark_cover_surf
+        self.alpha = 255 if self.is_animate else 0
+
+    def run(self):
+        self.default_run()
+
+        speed = 4
+        self.alpha -= speed
+        
+        if self.alpha <= 0:
+            self.alpha = 0
+            self.mapctrl.level.dark_cover_surf = None
+            self.is_finished = True
+            return 
+        
+        self.surf.set_alpha(self.alpha)
+        self.mapctrl.level.dark_cover_surf = self.surf
 
