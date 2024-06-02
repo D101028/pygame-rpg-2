@@ -20,7 +20,7 @@ class Game:
         # sound 
         pygame.mixer.init()
 
-        # to fps
+        # show fps
         self.is_show_fps = False
 
     def run(self):

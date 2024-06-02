@@ -138,6 +138,40 @@
                     ]
                 }
             ]
+        }, 
+        {
+            "self-switches": {
+                "is-animation": true
+            }, 
+            "self-variables": {}, 
+            "pages": [
+                {
+                    "condition": null,
+                    "trigger": "Parallel",
+                    "contents": []
+                }, 
+                {
+                    "condition": "s[is-animation]",
+                    "trigger": "Parallel",
+                    "contents": [
+                        ["Add Animation Block", {
+                            "unit_pos": [63, 71], 
+                            "is_obstacle": true, 
+                            "animation_id": null, 
+                            "file_path": "D:\\Projects\\Python\\pygame\\pygame-rpg-2\\Dev\\Graphics\\animations\\00.png", 
+                            "size": [384, 384], 
+                            "animation_speed": null, 
+                            "unit_move_route": [[64, 71], [63, 60], [63, 71]], 
+                            "interval": null, 
+                            "loop": null
+                        }], 
+                        ["Set Local Switch", {
+                            "switch": "is-animation", 
+                            "value": false
+                        }]
+                    ]
+                }
+            ]
         }
     ]
 }

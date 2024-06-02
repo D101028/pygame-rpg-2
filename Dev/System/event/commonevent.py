@@ -3,6 +3,7 @@ from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from mapctrl import MapCtrl
 
+from aniblock import AnimationBlock
 from event.process import ChangeMap, ShowText, ShowChoices, ShowPicture, GameOver, OpenDarkCover, CloseDarkCover
 
 class CommonEvent:
@@ -263,6 +264,24 @@ class Command:
             self.process = CloseDarkCover(self.mapctrl, self.commonevent, False, 
                                          self.param.get("is_animate"))
             self.run_process()
+        
+        elif self.action == "Add Animation Block":
+            if self.param["is_obstacle"]:
+                groups = [self.mapctrl.level.visible_sprites, self.mapctrl.level.obstacle_sprites]
+            else:
+                groups = [self.mapctrl.level.visible_sprites]
+            AnimationBlock(
+                self.param["unit_pos"], 
+                groups, 
+                self.param.get("animation_id"), 
+                self.param.get("file_path"), 
+                self.param.get("size"), 
+                self.param.get("animation_speed"), 
+                self.param.get("unit_move_route"), 
+                self.param.get("interval"), 
+                self.param.get("loop")
+            )
+            self.is_finished = True
 
         else:
             raise RuntimeError(f"wrong content action: `{self.action}`")

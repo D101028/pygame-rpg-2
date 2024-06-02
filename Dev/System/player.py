@@ -6,9 +6,7 @@ from settings import *
 from support import import_folder
 
 class Player(Entity):
-    def __init__(self, pos, groups, obstacle_sprites, status: str
-            #   create_attack,destroy_attack,create_magic
-                ):
+    def __init__(self, pos, groups, obstacle_sprites, status: str):
         super().__init__(groups)
         status = status.replace("_idle", "")
         self.image = pygame.image.load(f'../Graphics/player/{status}/{status}_0.png').convert_alpha()
@@ -37,7 +35,6 @@ class Player(Entity):
             self.animations[animation] = import_folder(full_path)
 
     def input(self):
-        # if not self.attacking:
         if not self.is_keyboard_forbidden:
             keys = KeyPress.keys
 
@@ -70,21 +67,8 @@ class Player(Entity):
 
         # idle status
         if self.direction.x == 0 and self.direction.y == 0:
-            # if not 'idle' in self.status and not 'attack' in self.status:
             if not 'idle' in self.status:
                 self.status = self.status + '_idle'
-
-        # if self.attacking:
-        #     self.direction.x = 0
-        #     self.direction.y = 0
-        #     if not 'attack' in self.status:
-        #         if 'idle' in self.status:
-        #             self.status = self.status.replace('_idle','_attack')
-        #         else:
-        #             self.status = self.status + '_attack'
-        # else:
-        #     if 'attack' in self.status:
-        #         self.status = self.status.replace('_attack','')
 
     def animate(self):
         animation = self.animations[self.status]
@@ -96,13 +80,6 @@ class Player(Entity):
         # set the image
         self.image = animation[int(self.frame_index)]
         self.rect = self.image.get_rect(center = self.hitbox.center)
-
-        # flicker 
-        # if not self.vulnerable:
-        #     alpha = self.wave_value()
-        #     self.image.set_alpha(alpha)
-        # else:
-        #     self.image.set_alpha(255)
 
     def update(self):
         self.input()

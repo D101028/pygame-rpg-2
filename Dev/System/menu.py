@@ -133,20 +133,20 @@ class LoadFileSect:
                 self.file_list.append(i)
 
     def listener(self):
-        keys = pygame.key.get_pressed()
-        if keys[pygame.K_UP] or keys[pygame.K_DOWN] or keys[pygame.K_RETURN] or keys[pygame.K_z] or keys[pygame.K_SPACE] or keys[pygame.K_ESCAPE] or keys[pygame.K_LEFT]:
+        keys = KeyPress.keys
+        if keys[KeySettings.up] or keys[KeySettings.down] or keys[KeySettings.confirm_1] or keys[KeySettings.confirm_2] or keys[KeySettings.cancel_1] or keys[KeySettings.cancel_2] or keys[KeySettings.left]:
             if self.is_key_listening:
                 self.is_key_listening = False
-                if keys[pygame.K_UP]:
+                if keys[KeySettings.up]:
                     self.focus = (self.focus - 1) % len(self.file_list)
                     switch_sound.play()
-                elif keys[pygame.K_DOWN]:
+                elif keys[KeySettings.down]:
                     self.focus = (self.focus + 1) % len(self.file_list)
                     switch_sound.play()
-                elif keys[pygame.K_ESCAPE] or keys[pygame.K_LEFT]:
+                elif keys[KeySettings.cancel_1] or keys[KeySettings.cancel_2] or keys[KeySettings.left]:
                     self.menu.select_section = None
                     choose_sound.play()
-                elif keys[pygame.K_RETURN] or keys[pygame.K_z] or keys[pygame.K_SPACE]:
+                elif keys[KeySettings.confirm_1] or keys[KeySettings.confirm_2]:
                     self.menu.mapctrl.level.is_menu_open = False
                     self.menu.mapctrl.level.stop_bgm_and_bgs()
                     self.menu.mapctrl.reload_from_save_data("../data/save/file" + str(self.file_list[self.focus] + 1) + ".json")

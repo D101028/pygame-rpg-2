@@ -225,6 +225,15 @@ Open Dark Cover (
 Close Dark Cover (
     *is_animate: false
 )
+Add Animation Block (
+    unit_pos: [], 
+    *animation_id: int,                  |
+    *file_path: str,                    _| at least 1 of the two param must be filled
+    *animation_speed: float, 
+    *unit_move_route: [], 
+    *interval: int, 
+    *loop: int
+)
 """
 
 #########################################

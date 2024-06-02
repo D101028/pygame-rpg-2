@@ -125,12 +125,12 @@ class Level:
                             Tile((x,y), [self.groundtype_sprites], 'groundtype', ground_id = int(col))
 
                         if style == 'animationblockobject':
-                            AnimationBlock((x,y), 
+                            AnimationBlock((col_index, row_index), 
                                            [self.visible_sprites, self.obstacle_sprites], 
                                            int(col))
 
                         if style == 'animationblockdetail':
-                            AnimationBlock((x,y), 
+                            AnimationBlock((col_index, row_index), 
                                            [self.visible_sprites], 
                                            int(col))
 
@@ -195,6 +195,7 @@ class Level:
         if keys[KeySettings.menu_1] or keys[KeySettings.menu_2]:
             if self.is_menu_listening:
                 self.is_menu_listening = False
+                self.lock_player()
                 choose_sound.play()
                 self.is_menu_open = True
         else:
@@ -266,7 +267,7 @@ class YSortCameraGroup(pygame.sprite.Group):
 
         # drawing the floor
         floor_offset_pos = self.floor_rect.topleft - self.offset
-        self.display_surface.blit(self.floor_surf,floor_offset_pos)
+        self.display_surface.blit(self.floor_surf, floor_offset_pos)
 
         # for sprite in self.sprites():
         for sprite in sorted(self.sprites(), key = lambda sprite: sprite.rect.bottom):
