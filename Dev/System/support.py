@@ -1,12 +1,20 @@
+import os
 from csv import reader
-from os import walk, path
 
 import pygame
 
 from settings import *
 
+def sorted_walk(top, followlinks=False):
+    # os.walk generates a 3-tuple of (dirpath, dirnames, filenames)
+    for dirpath, dirnames, filenames in os.walk(top, followlinks=followlinks):
+        # Sort dirnames and filenames in place
+        dirnames.sort()
+        filenames.sort()
+        yield dirpath, dirnames, filenames
+
 def import_csv_layout(filepath) -> list[list[str]]:
-    if not path.isfile(filepath):
+    if not os.path.isfile(filepath):
         return []
     terrain_map = []
     with open(filepath) as level_map:
@@ -18,7 +26,7 @@ def import_csv_layout(filepath) -> list[list[str]]:
 def import_folder(path) -> list[pygame.surface.Surface]:
     surface_list = []
 
-    for _, __, img_files in walk(path):
+    for _, __, img_files in sorted_walk(path):
         for image in img_files:
             full_path = path + '/' + image
             image_surf = pygame.image.load(full_path).convert_alpha()
